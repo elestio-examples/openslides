@@ -9,6 +9,10 @@ ports:
     isAuth: false
 
 environments:
+  - key: "ADMIN_PASSWORD"
+    value: "random_password"
+  - key: "DOMAIN"
+    value: "[CI_CD_DOMAIN]"
   - key: "ACTION_HOST"
     value: "backendAction"
   - key: "ACTION_PORT"

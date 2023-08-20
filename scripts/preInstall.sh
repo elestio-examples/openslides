@@ -7,3 +7,5 @@ chown -R 1000:1000 ./postgres-data
 wget https://github.com/OpenSlides/openslides-manage-service/releases/download/latest/openslides
 chmod +x openslides
 ./openslides setup .
+
+echo ${ADMIN_PASSWORD}> ./secrets/superadmin 
