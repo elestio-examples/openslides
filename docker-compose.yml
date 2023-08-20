@@ -1,5 +1,65 @@
 version: "3.3"
 
+x-default-environment: &default-environment
+  ACTION_HOST: backendAction
+  ACTION_PORT: 9002
+  AUTH_COOKIE_KEY_FILE: /run/secrets/auth_cookie_key
+  AUTH_HOST: auth
+  AUTH_PORT: 9004
+  AUTH_TOKEN_KEY_FILE: /run/secrets/auth_token_key
+  AUTOUPDATE_HOST: autoupdate
+  AUTOUPDATE_PORT: 9012
+  CACHE_HOST: redis
+  CACHE_PORT: 6379
+  DATABASE_HOST: postgres
+  DATABASE_NAME: openslides
+  DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  DATABASE_PORT: 5432
+  DATABASE_USER: openslides
+  DATASTORE_DATABASE_HOST: postgres
+  DATASTORE_DATABASE_NAME: openslides
+  DATASTORE_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  DATASTORE_DATABASE_PORT: 5432
+  DATASTORE_DATABASE_USER: openslides
+  DATASTORE_READER_HOST: datastoreReader
+  DATASTORE_READER_PORT: 9010
+  DATASTORE_WRITER_HOST: datastoreWriter
+  DATASTORE_WRITER_PORT: 9011
+  ICC_HOST: icc
+  ICC_PORT: 9007
+  INTERNAL_AUTH_PASSWORD_FILE: /run/secrets/internal_auth_password
+  MANAGE_AUTH_PASSWORD_FILE: /run/secrets/manage_auth_password
+  MANAGE_HOST: manage
+  MANAGE_PORT: 9008
+  MEDIA_DATABASE_HOST: postgres
+  AUTOUPDATE_DATABASE_HOST: postgres
+  MEDIA_DATABASE_NAME: openslides
+  MEDIA_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  MEDIA_DATABASE_PORT: 5432
+  MEDIA_DATABASE_USER: openslides
+  MEDIA_HOST: media
+  MEDIA_PORT: 9006
+  MESSAGE_BUS_HOST: redis
+  MESSAGE_BUS_PORT: 6379
+  ICC_REDIS_HOST: redis
+  ICC_REDIS_PORT: 6379
+  VOTE_REDIS_HOST: redis
+  VOTE_REDIS_PORT: 6379
+  OPENSLIDES_DEVELOPMENT: "false"
+  OPENSLIDES_LOGLEVEL: info
+  PRESENTER_HOST: backendPresenter
+  PRESENTER_PORT: 9003
+  SUPERADMIN_PASSWORD_FILE: /run/secrets/superadmin
+  SYSTEM_URL: localhost:8000
+  EXTERNAL_ADDRESS: openslidesdsds-u353.vm.elestio.app
+  VOTE_DATABASE_HOST: postgres
+  VOTE_DATABASE_NAME: openslides
+  VOTE_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  VOTE_DATABASE_PORT: 5432
+  VOTE_DATABASE_USER: openslides
+  VOTE_HOST: vote
+  VOTE_PORT: 9013
+
 services:
   proxy:
     image: ghcr.io/openslides/openslides/openslides-proxy:latest
@@ -12,9 +72,8 @@ services:
       - media
       - icc
       - vote
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       ENABLE_LOCAL_HTTPS: 1
       HTTPS_CERT_FILE: /run/secrets/cert_crt
       HTTPS_KEY_FILE: /run/secrets/cert_key
@@ -22,7 +81,7 @@ services:
       - uplink
       - frontend
     ports:
-      - 172.17.0.1:8523:8000
+      - 127.0.0.1:8000:8000
     secrets:
       - cert_crt
       - cert_key
@@ -37,8 +96,8 @@ services:
       - media
       - icc
       - vote
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - frontend
 
@@ -50,9 +109,8 @@ services:
       - media
       - vote
       - postgres
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       OPENSLIDES_BACKEND_COMPONENT: action
     networks:
       - frontend
@@ -69,9 +127,8 @@ services:
     depends_on:
       - auth
       - postgres
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       OPENSLIDES_BACKEND_COMPONENT: presenter
     networks:
       - frontend
@@ -86,9 +143,8 @@ services:
     depends_on:
       - datastoreWriter
       - postgres
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       OPENSLIDES_BACKEND_COMPONENT: action
     networks:
       - data
@@ -103,9 +159,8 @@ services:
     image: ghcr.io/openslides/openslides/openslides-datastore-reader:latest
     depends_on:
       - postgres
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       NUM_WORKERS: "8"
     networks:
       - data
@@ -117,8 +172,8 @@ services:
     depends_on:
       - postgres
       - redis
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - data
     secrets:
@@ -126,14 +181,13 @@ services:
 
   postgres:
     image: postgres:11
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       POSTGRES_DB: openslides
       POSTGRES_USER: openslides
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     volumes:
-      - ./postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
     networks:
       - data
     secrets:
@@ -144,8 +198,8 @@ services:
     depends_on:
       - datastoreReader
       - redis
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - frontend
       - data
@@ -159,8 +213,8 @@ services:
     depends_on:
       - datastoreReader
       - redis
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - frontend
       - data
@@ -176,8 +230,8 @@ services:
       - auth
       - autoupdate
       - redis
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - frontend
       - data
@@ -189,8 +243,8 @@ services:
   redis:
     image: redis:alpine
     command: redis-server --save ""
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - data
 
@@ -198,8 +252,8 @@ services:
     image: ghcr.io/openslides/openslides/openslides-media:latest
     depends_on:
       - postgres
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - frontend
       - data
@@ -214,8 +268,8 @@ services:
       - datastoreReader
       - postgres
       - redis
-    env_file:
-      - ./.env
+    environment:
+      <<: *default-environment
     networks:
       - frontend
       - data
@@ -229,9 +283,8 @@ services:
     depends_on:
       - datastoreReader
       - backendManage
-    env_file:
-      - ./.env
     environment:
+      <<: *default-environment
       ACTION_HOST: backendManage
     networks:
       - frontend
@@ -268,3 +321,11 @@ secrets:
     file: ./secrets/cert_crt
   cert_key:
     file: ./secrets/cert_key
+
+volumes:
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/postgres-data
+      o: bind

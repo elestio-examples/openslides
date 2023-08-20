@@ -6,3 +6,4 @@ echo "Waiting for software to be ready ..."
 sleep 30s;
 
 
+./openslides initial-data
