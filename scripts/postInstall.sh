@@ -10,6 +10,6 @@ sleep 30s;
 
 docker-compose down -v --remove-orphans
 
-sed -i "s~- 127.0.0.1:8000:8000~- 172.17.0.1:8523:8000~g ./docker-compose.yml
+sed -i "s~127.0.0.1:8000:8000~172.17.0.1:8523:8000~g" ./docker-compose.yml
 
 docker-compose up -d
