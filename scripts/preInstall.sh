@@ -8,4 +8,4 @@ wget https://github.com/OpenSlides/openslides-manage-service/releases/download/l
 chmod +x openslides
 ./openslides setup .
 
-echo ${ADMIN_PASSWORD}> ./secrets/superadmin 
+# echo ${ADMIN_PASSWORD}> ./secrets/superadmin 
