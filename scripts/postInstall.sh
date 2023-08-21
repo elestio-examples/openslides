@@ -7,6 +7,7 @@ sleep 30s;
 
 
 ./openslides initial-data
+./openslides set-password -u 1 -p ${ADMIN_PASSWORD}
 
 docker-compose down -v --remove-orphans
 
