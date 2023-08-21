@@ -16,6 +16,7 @@ echo "========================"
 ./openslides get organization --fields url
 echo "========================"
 echo "========================"
+./openslides set organization.update {url: 'https://yu.com',name: 'Organization', id: 1}
 
 docker-compose down -v --remove-orphans
 
