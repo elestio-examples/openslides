@@ -70,6 +70,7 @@ x-default-environment: &default-environment
 services:
   proxy:
     image: ghcr.io/openslides/openslides/openslides-proxy:latest
+    restart: always
     depends_on:
       - client
       - backendAction
@@ -84,9 +85,6 @@ services:
       ENABLE_LOCAL_HTTPS: 1
       HTTPS_CERT_FILE: /run/secrets/cert_crt
       HTTPS_KEY_FILE: /run/secrets/cert_key
-    networks:
-      - uplink
-      - frontend
     ports:
       - 127.0.0.1:8000:8000
     secrets:
@@ -95,6 +93,7 @@ services:
 
   client:
     image: ghcr.io/openslides/openslides/openslides-client:latest
+    restart: always
     depends_on:
       - backendAction
       - backendPresenter
@@ -105,11 +104,10 @@ services:
       - vote
     environment:
       <<: *default-environment
-    networks:
-      - frontend
 
   backendAction:
     image: ghcr.io/openslides/openslides/openslides-backend:latest
+    restart: always
     depends_on:
       - datastoreWriter
       - auth
@@ -126,10 +124,6 @@ services:
       EMAIL_ACCEPT_SELF_SIGNED_CERTIFICATE: "false"
       DEFAULT_FROM_EMAIL: ${EMAIL_FROM_ADDRESS}
       OPENSLIDES_BACKEND_COMPONENT: action
-    networks:
-      - frontend
-      - data
-      - email
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -138,15 +132,13 @@ services:
 
   backendPresenter:
     image: ghcr.io/openslides/openslides/openslides-backend:latest
+    restart: always
     depends_on:
       - auth
       - postgres
     environment:
       <<: *default-environment
       OPENSLIDES_BACKEND_COMPONENT: presenter
-    networks:
-      - frontend
-      - data
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -154,15 +146,13 @@ services:
 
   backendManage:
     image: ghcr.io/openslides/openslides/openslides-backend:latest
+    restart: always
     depends_on:
       - datastoreWriter
       - postgres
     environment:
       <<: *default-environment
       OPENSLIDES_BACKEND_COMPONENT: action
-    networks:
-      - data
-      - email
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -171,30 +161,29 @@ services:
 
   datastoreReader:
     image: ghcr.io/openslides/openslides/openslides-datastore-reader:latest
+    restart: always
     depends_on:
       - postgres
     environment:
       <<: *default-environment
       NUM_WORKERS: "8"
-    networks:
-      - data
     secrets:
       - postgres_password
 
   datastoreWriter:
     image: ghcr.io/openslides/openslides/openslides-datastore-writer:latest
+    restart: always
     depends_on:
       - postgres
       - redis
     environment:
       <<: *default-environment
-    networks:
-      - data
     secrets:
       - postgres_password
 
   postgres:
     image: postgres:11
+    restart: always
     environment:
       <<: *default-environment
       POSTGRES_DB: openslides
@@ -202,21 +191,17 @@ services:
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    networks:
-      - data
     secrets:
       - postgres_password
 
   autoupdate:
     image: ghcr.io/openslides/openslides/openslides-autoupdate:latest
+    restart: always
     depends_on:
       - datastoreReader
       - redis
     environment:
       <<: *default-environment
-    networks:
-      - frontend
-      - data
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -224,14 +209,12 @@ services:
 
   auth:
     image: ghcr.io/openslides/openslides/openslides-auth:latest
+    restart: always
     depends_on:
       - datastoreReader
       - redis
     environment:
       <<: *default-environment
-    networks:
-      - frontend
-      - data
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -239,6 +222,7 @@ services:
 
   vote:
     image: ghcr.io/openslides/openslides/openslides-vote:latest
+    restart: always
     depends_on:
       - datastoreReader
       - auth
@@ -246,9 +230,6 @@ services:
       - redis
     environment:
       <<: *default-environment
-    networks:
-      - frontend
-      - data
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -256,21 +237,18 @@ services:
 
   redis:
     image: redis:alpine
+    restart: always
     command: redis-server --save ""
     environment:
       <<: *default-environment
-    networks:
-      - data
 
   media:
     image: ghcr.io/openslides/openslides/openslides-media:latest
+    restart: always
     depends_on:
       - postgres
     environment:
       <<: *default-environment
-    networks:
-      - frontend
-      - data
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -278,15 +256,13 @@ services:
 
   icc:
     image: ghcr.io/openslides/openslides/openslides-icc:latest
+    restart: always
     depends_on:
       - datastoreReader
       - postgres
       - redis
     environment:
       <<: *default-environment
-    networks:
-      - frontend
-      - data
     secrets:
       - auth_token_key
       - auth_cookie_key
@@ -294,29 +270,17 @@ services:
 
   manage:
     image: ghcr.io/openslides/openslides/openslides-manage:latest
+    restart: always
     depends_on:
       - datastoreReader
       - backendManage
     environment:
       <<: *default-environment
       ACTION_HOST: backendManage
-    networks:
-      - frontend
-      - data
     secrets:
       - superadmin
       - manage_auth_password
       - internal_auth_password
-
-networks:
-  uplink:
-    internal: false
-  email:
-    internal: false
-  frontend:
-    internal: true
-  data:
-    internal: true
 
 secrets:
   auth_token_key:
