@@ -12,7 +12,7 @@ sleep 30s;
 # ./openslides set organization.update {url: 'https://yu.com', id: 1}
 # ./openslides set organization.update {name: 'Organization', id: 1}
 # openslides set meeting -f - <<< '[{ "id": 12, "name": "cool meeting" }]'
-./openslides set organization.update <<< [{{url: 'https://yu.com', id: 1}}]
+./openslides set organization.update <<< [{{"url": "https://yu.com", "id": 1}}]
 # ./openslides set organization.update {name: 'Organization'}
 
 docker-compose down -v --remove-orphans
