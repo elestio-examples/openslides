@@ -8,15 +8,11 @@ sleep 30s;
 
 ./openslides initial-data
 ./openslides set-password -u 1 -p ${ADMIN_PASSWORD}
-echo "========================"
-echo "========================"
-./openslides get organization1 --fields url
-echo "========================"
-echo "========================"
-./openslides get organization --fields url
-echo "========================"
-echo "========================"
-./openslides set organization.update {url: 'https://yu.com',name: 'Organization', id: 1}
+
+./openslides set organization.update {url: 'https://yu.com', id: 1}
+./openslides set organization.update {name: 'Organization', id: 1}
+./openslides set organization.update {url: 'https://yu.com'}
+./openslides set organization.update {name: 'Organization'}
 
 docker-compose down -v --remove-orphans
 
