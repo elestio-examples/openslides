@@ -182,13 +182,15 @@ services:
       - postgres_password
 
   postgres:
-    image: postgres:11
+    image: elestio/postgres:15
     restart: always
     environment:
       <<: *default-environment
       POSTGRES_DB: openslides
       POSTGRES_USER: openslides
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    ports:
+      - 172.17.0.1:5432:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
     secrets:
@@ -236,7 +238,7 @@ services:
       - postgres_password
 
   redis:
-    image: redis:alpine
+    image: elestio/redis:7.0
     restart: always
     command: redis-server --save ""
     environment:
@@ -281,6 +283,18 @@ services:
       - superadmin
       - manage_auth_password
       - internal_auth_password
+
+  pgadmin4:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+      PGADMIN_LISTEN_PORT: 8080
+    ports:
+      - "172.17.0.1:8080:8080"
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
 
 secrets:
   auth_token_key:
