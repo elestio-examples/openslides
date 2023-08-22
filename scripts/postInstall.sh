@@ -18,9 +18,9 @@ sleep 30s;
 
 ./openslides initial-data
 ./openslides set-password -u 1 -p ${ADMIN_PASSWORD}
-./openslides set organization -f - <<< '[{ "id": 1, "url": "https://${DOMAIN}" }]'
+./openslides set organization -f - <<< '[{ "id": 1, "url": "https://'${DOMAIN}'" }]'
 ./openslides set organization -f - <<< '[{ "id": 1, "name": "Organization" }]'
-./openslides set user -f - <<< '[{ "id": 1, "email": "https://${ADMIN_EMAIL}" }]'
+./openslides set user -f - <<< '[{ "id": 1, "email": "'${ADMIN_EMAIL}'" }]'
 
 # ./openslides set organization.update {url: 'https://yu.com', id: 1}
 # ./openslides set organization.update {name: 'Organization', id: 1}
