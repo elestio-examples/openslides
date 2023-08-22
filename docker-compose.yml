@@ -87,6 +87,7 @@ services:
       HTTPS_KEY_FILE: /run/secrets/cert_key
     ports:
       - 127.0.0.1:8000:8000
+      - 172.17.0.1:8523:8000
     secrets:
       - cert_crt
       - cert_key
@@ -190,7 +191,6 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
     ports:
-      - 127.0.0.1:8000:8000
       - 172.17.0.1:5432:5432
     volumes:
       - postgres-data:/var/lib/postgresql/data
