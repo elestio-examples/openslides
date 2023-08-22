@@ -5,6 +5,13 @@ set -o allexport; source .env; set +o allexport;
 echo "Waiting for software to be ready ..."
 sleep 30s;
 
+docker-compose exec -T database sh -c "psql -U openslides openslides <<EOF
+\c openslides
+UPDATE public.models
+SET data = jsonb_set(data, '{url}', '"${DOMAIN}"', false)
+WHERE data ->> 'id' = '1';
+EOF";
+
 
 ./openslides initial-data
 ./openslides set-password -u 1 -p ${ADMIN_PASSWORD}
@@ -12,7 +19,7 @@ sleep 30s;
 # ./openslides set organization.update {url: 'https://yu.com', id: 1}
 # ./openslides set organization.update {name: 'Organization', id: 1}
 # openslides set meeting -f - <<< '[{ "id": 12, "name": "cool meeting" }]'
-./openslides set action -u 1 organization.update {url: "https://yu.com"}
+# ./openslides set action -u 1 organization.update {url: "https://yu.com"}
 # ./openslides set organization.update {name: 'Organization'}
 
 docker-compose down -v --remove-orphans
