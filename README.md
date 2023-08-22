@@ -21,3 +21,9 @@ You can open pgAdmin web UI here:
     URL: https://[CI_CD_DOMAIN]:8443
     email: [ADMIN_EMAIL]
     password: [ADMIN_PASSWORD]
+
+#pgAdmin
+
+To access to the openslides database, you'll get the password with the command:
+
+    cat ./secrets/postgres_password

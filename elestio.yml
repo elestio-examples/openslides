@@ -57,4 +57,4 @@ webUI:
   - url: "https://[CI_CD_DOMAIN]:8443"
     label: "PgAdmin"
     login: "[ADMIN_EMAIL]"
-    password: "[POSTGRES_PASSWORD]"
+    password: "[ADMIN_PASSWORD]"

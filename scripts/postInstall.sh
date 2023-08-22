@@ -5,12 +5,12 @@ set -o allexport; source .env; set +o allexport;
 echo "Waiting for software to be ready ..."
 sleep 30s;
 
-docker-compose exec -T database sh -c "psql -U openslides openslides <<EOF
-\c openslides
-UPDATE public.models
-SET data = jsonb_set(data, '{url}', '"${DOMAIN}"', false)
-WHERE data ->> 'id' = '1';
-EOF";
+# docker-compose exec -T database sh -c "psql -U openslides openslides <<EOF
+# \c openslides
+# UPDATE public.models
+# SET data = jsonb_set(data, '{url}', '"${DOMAIN}"', false)
+# WHERE data ->> 'id' = '1';
+# EOF";
 
 
 ./openslides initial-data
