@@ -8,12 +8,6 @@ wget https://github.com/OpenSlides/openslides-manage-service/releases/download/l
 chmod +x openslides
 ./openslides setup .
 
-POSTGRES_PASSWORD=$(cat ./secrets/postgres_password)
-
-cat << EOT >> ./.env
-
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-EOT
 
 cat <<EOT > ./servers.json
 {
