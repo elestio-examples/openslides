@@ -5,12 +5,15 @@ set -o allexport; source .env; set +o allexport;
 echo "Waiting for software to be ready ..."
 sleep 30s;
 
-# docker-compose exec -T database sh -c "psql -U openslides openslides <<EOF
-# \c openslides
-# UPDATE public.models
-# SET data = jsonb_set(data, '{url}', '"${DOMAIN}"', false)
-# WHERE data ->> 'id' = '1';
-# EOF";
+docker-compose exec -T database sh -c "psql -U postgres openslides <<EOF
+\c openslides
+UPDATE public.models
+SET data = jsonb_set(data, '{url}', '"${DOMAIN}"', false)
+WHERE data ->> 'id' = '1';
+EOF";
+
+# INSERT INTO public.events
+# (fqid, type, data, weight) VALUES('organization/1', 'update', '{"url": "${DOMAIN}"}', 1);
 
 
 ./openslides initial-data
@@ -22,9 +25,9 @@ sleep 30s;
 # ./openslides set action -u 1 organization.update {url: "https://yu.com"}
 # ./openslides set organization.update {name: 'Organization'}
 
-docker-compose down -v --remove-orphans
+docker-compose down 
 
-sed -i "s~127.0.0.1:8000:8000~172.17.0.1:8523:8000~g" ./docker-compose.yml
+# sed -i "s~127.0.0.1:8000:8000~172.17.0.1:8523:8000~g" ./docker-compose.yml
 
 docker-compose up -d
 
