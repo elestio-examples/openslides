@@ -22,8 +22,10 @@ You can open pgAdmin web UI here:
     email: [ADMIN_EMAIL]
     password: [ADMIN_PASSWORD]
 
-#pgAdmin
+# pgAdmin
 
-To access to the openslides database, you'll get the password with the command:
+To access to the openslides you'll need a password.
+
+To find it open a terminal from your pipeline dashboard and type:
 
     cat ./secrets/postgres_password
