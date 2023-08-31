@@ -19,7 +19,7 @@ cat <<EOT > ./servers.json
             "Port": 5432,
             "MaintenanceDB": "postgres",
             "SSLMode": "prefer",
-            "Username": "postgres",
+            "Username": "openslides",
             "PassFile": "/pgpass"
         }
     }
