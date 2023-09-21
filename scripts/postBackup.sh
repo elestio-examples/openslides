@@ -1,1 +1,6 @@
-# nothing to do here ...
+#set env vars
+set -o allexport; source .env; set +o allexport;
+
+#wait until the server is ready
+echo "Migration running ..."
+./openslides migrations finalize
