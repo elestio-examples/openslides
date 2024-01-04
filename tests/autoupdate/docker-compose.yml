@@ -1,0 +1,324 @@
+version: "3.3"
+
+x-default-environment: &default-environment
+  ACTION_HOST: backendAction
+  ACTION_PORT: 9002
+  AUTH_COOKIE_KEY_FILE: /run/secrets/auth_cookie_key
+  AUTH_HOST: auth
+  AUTH_PORT: 9004
+  AUTH_TOKEN_KEY_FILE: /run/secrets/auth_token_key
+  AUTOUPDATE_HOST: autoupdate
+  AUTOUPDATE_PORT: 9012
+  CACHE_HOST: redis
+  CACHE_PORT: 6379
+  DATABASE_HOST: postgres
+  DATABASE_NAME: openslides
+  DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  DATABASE_PORT: 5432
+  DATABASE_USER: postgres
+  DATASTORE_DATABASE_HOST: postgres
+  DATASTORE_DATABASE_NAME: openslides
+  DATASTORE_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  DATASTORE_DATABASE_PORT: 5432
+  DATASTORE_DATABASE_USER: postgres
+  DATASTORE_READER_HOST: datastoreReader
+  DATASTORE_READER_PORT: 9010
+  DATASTORE_WRITER_HOST: datastoreWriter
+  DATASTORE_WRITER_PORT: 9011
+  ICC_HOST: icc
+  ICC_PORT: 9007
+  INTERNAL_AUTH_PASSWORD_FILE: /run/secrets/internal_auth_password
+  MANAGE_AUTH_PASSWORD_FILE: /run/secrets/manage_auth_password
+  MANAGE_HOST: manage
+  MANAGE_PORT: 9008
+  MEDIA_DATABASE_HOST: postgres
+  AUTOUPDATE_DATABASE_HOST: postgres
+  MEDIA_DATABASE_NAME: openslides
+  MEDIA_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  MEDIA_DATABASE_PORT: 5432
+  MEDIA_DATABASE_USER: postgres
+  MEDIA_HOST: media
+  MEDIA_PORT: 9006
+  MESSAGE_BUS_HOST: redis
+  MESSAGE_BUS_PORT: 6379
+  ICC_REDIS_HOST: redis
+  ICC_REDIS_PORT: 6379
+  VOTE_REDIS_HOST: redis
+  VOTE_REDIS_PORT: 6379
+  OPENSLIDES_DEVELOPMENT: "false"
+  OPENSLIDES_LOGLEVEL: info
+  PRESENTER_HOST: backendPresenter
+  PRESENTER_PORT: 9003
+  SUPERADMIN_PASSWORD_FILE: /run/secrets/superadmin
+  SYSTEM_URL: ${DOMAIN}
+  EXTERNAL_ADDRESS: ${DOMAIN}
+  VOTE_DATABASE_HOST: postgres
+  VOTE_DATABASE_NAME: openslides
+  VOTE_DATABASE_PASSWORD_FILE: /run/secrets/postgres_password
+  VOTE_DATABASE_PORT: 5432
+  VOTE_DATABASE_USER: postgres
+  VOTE_HOST: vote
+  VOTE_PORT: 9013
+  EMAIL_HOST: 172.17.0.1
+  EMAIL_PORT: 25
+  EMAIL_HOST_USER:
+  EMAIL_HOST_PASSWORD:
+  EMAIL_CONNECTION_SECURITY: "NONE"
+  EMAIL_ACCEPT_SELF_SIGNED_CERTIFICATE: "false"
+  DEFAULT_FROM_EMAIL: ${EMAIL_FROM_ADDRESS}
+
+services:
+  proxy:
+    image: ghcr.io/openslides/openslides/openslides-proxy:latest
+    restart: always
+    depends_on:
+      - client
+      - backendAction
+      - backendPresenter
+      - autoupdate
+      - auth
+      - media
+      - icc
+      - vote
+    environment:
+      <<: *default-environment
+      ENABLE_LOCAL_HTTPS: 1
+      HTTPS_CERT_FILE: /run/secrets/cert_crt
+      HTTPS_KEY_FILE: /run/secrets/cert_key
+    ports:
+      - 127.0.0.1:8000:8000
+      - 172.17.0.1:8523:8000
+    secrets:
+      - cert_crt
+      - cert_key
+
+  client:
+    image: ghcr.io/openslides/openslides/openslides-client:latest
+    restart: always
+    depends_on:
+      - backendAction
+      - backendPresenter
+      - autoupdate
+      - auth
+      - media
+      - icc
+      - vote
+    environment:
+      <<: *default-environment
+
+  backendAction:
+    image: ghcr.io/openslides/openslides/openslides-backend:latest
+    restart: always
+    depends_on:
+      - datastoreWriter
+      - auth
+      - media
+      - vote
+      - postgres
+    environment:
+      <<: *default-environment
+      EMAIL_HOST: 172.17.0.1
+      EMAIL_PORT: 25
+      EMAIL_HOST_USER:
+      EMAIL_HOST_PASSWORD:
+      EMAIL_CONNECTION_SECURITY: "NONE"
+      EMAIL_ACCEPT_SELF_SIGNED_CERTIFICATE: "false"
+      DEFAULT_FROM_EMAIL: ${EMAIL_FROM_ADDRESS}
+      OPENSLIDES_BACKEND_COMPONENT: action
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - internal_auth_password
+      - postgres_password
+
+  backendPresenter:
+    image: ghcr.io/openslides/openslides/openslides-backend:latest
+    restart: always
+    depends_on:
+      - auth
+      - postgres
+    environment:
+      <<: *default-environment
+      OPENSLIDES_BACKEND_COMPONENT: presenter
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  backendManage:
+    image: ghcr.io/openslides/openslides/openslides-backend:latest
+    restart: always
+    depends_on:
+      - datastoreWriter
+      - postgres
+    environment:
+      <<: *default-environment
+      OPENSLIDES_BACKEND_COMPONENT: action
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - internal_auth_password
+      - postgres_password
+
+  datastoreReader:
+    image: ghcr.io/openslides/openslides/openslides-datastore-reader:latest
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      <<: *default-environment
+      NUM_WORKERS: "8"
+    secrets:
+      - postgres_password
+
+  datastoreWriter:
+    image: ghcr.io/openslides/openslides/openslides-datastore-writer:latest
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      <<: *default-environment
+    secrets:
+      - postgres_password
+
+  postgres:
+    image: elestio/postgres:15
+    restart: always
+    environment:
+      <<: *default-environment
+      POSTGRES_DB: openslides
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    ports:
+      - 172.17.0.1:5432:5432
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    secrets:
+      - postgres_password
+
+  autoupdate:
+    image: elestio4test/openslides-autoupdate:${SOFTWARE_VERSION_TAG}
+    restart: always
+    depends_on:
+      - datastoreReader
+      - redis
+    environment:
+      <<: *default-environment
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  auth:
+    image: ghcr.io/openslides/openslides/openslides-auth:latest
+    restart: always
+    depends_on:
+      - datastoreReader
+      - redis
+    environment:
+      <<: *default-environment
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - internal_auth_password
+
+  vote:
+    image: ghcr.io/openslides/openslides/openslides-vote:latest
+    restart: always
+    depends_on:
+      - datastoreReader
+      - auth
+      - autoupdate
+      - redis
+    environment:
+      <<: *default-environment
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  redis:
+    image: elestio/redis:7.0
+    restart: always
+    command: redis-server --save ""
+    environment:
+      <<: *default-environment
+
+  media:
+    image: ghcr.io/openslides/openslides/openslides-media:latest
+    restart: always
+    depends_on:
+      - postgres
+    environment:
+      <<: *default-environment
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  icc:
+    image: ghcr.io/openslides/openslides/openslides-icc:latest
+    restart: always
+    depends_on:
+      - datastoreReader
+      - postgres
+      - redis
+    environment:
+      <<: *default-environment
+    secrets:
+      - auth_token_key
+      - auth_cookie_key
+      - postgres_password
+
+  manage:
+    image: ghcr.io/openslides/openslides/openslides-manage:latest
+    restart: always
+    depends_on:
+      - datastoreReader
+      - backendManage
+    environment:
+      <<: *default-environment
+      ACTION_HOST: backendManage
+    secrets:
+      - superadmin
+      - manage_auth_password
+      - internal_auth_password
+
+  pgadmin4:
+    image: dpage/pgadmin4:latest
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+      PGADMIN_LISTEN_PORT: 8080
+    ports:
+      - "172.17.0.1:8080:8080"
+    volumes:
+      - ./servers.json:/pgadmin4/servers.json
+
+secrets:
+  auth_token_key:
+    file: ./secrets/auth_token_key
+  auth_cookie_key:
+    file: ./secrets/auth_cookie_key
+  superadmin:
+    file: ./secrets/superadmin
+  manage_auth_password:
+    file: ./secrets/manage_auth_password
+  internal_auth_password:
+    file: ./secrets/internal_auth_password
+  postgres_password:
+    file: ./secrets/postgres_password
+  cert_crt:
+    file: ./secrets/cert_crt
+  cert_key:
+    file: ./secrets/cert_key
+
+volumes:
+  postgres-data:
+    driver: local
+    driver_opts:
+      type: none
+      device: ${PWD}/postgres-data
+      o: bind
