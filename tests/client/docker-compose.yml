@@ -86,7 +86,7 @@ services:
       HTTPS_CERT_FILE: /run/secrets/cert_crt
       HTTPS_KEY_FILE: /run/secrets/cert_key
     ports:
-      - 127.0.0.1:8000:8000
+      - 172.17.0.1:8000:8000
       - 172.17.0.1:8523:8000
     secrets:
       - cert_crt

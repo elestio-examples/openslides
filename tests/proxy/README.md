@@ -67,7 +67,7 @@ Run the project with the following command
 
     docker-compose up -d
 
-You can access the Web UI at: `http://your-domain:33140`
+You can access the Web UI at: `http://your-domain:8523`
 
 ## Docker-compose
 
@@ -161,7 +161,7 @@ Here are some example snippets to help you get started creating a container.
           HTTPS_CERT_FILE: /run/secrets/cert_crt
           HTTPS_KEY_FILE: /run/secrets/cert_key
         ports:
-          - 127.0.0.1:8000:8000
+          - 172.17.0.1:8000:8000
           - 172.17.0.1:8523:8000
         secrets:
           - cert_crt
@@ -414,7 +414,7 @@ Here are some example snippets to help you get started creating a container.
 
 ## Logging
 
-The Elestio Peertube Docker image sends the container logs to stdout. To view the logs, you can use the following command:
+The Elestio Openslides Docker image sends the container logs to stdout. To view the logs, you can use the following command:
 
     docker-compose logs -f
 
